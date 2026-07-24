@@ -1,0 +1,21 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Cucumber Regression Suite">
+
+    <parameter name="browser" value="chrome" />
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg" />
+    </listeners>
+
+    <test name="Cucumber Regression Test in Chrome">
+        <classes>
+            <class name="runners.RegisterCucumberTest" />
+            <class name="runners.LoginCucumberTest" />
+            <class name="runners.AddToCartCucumberTest" />
+            <class name="runners.WishlistCucumberTest" />
+            <class name="runners.SearchCucumberTest" />
+            <class name="runners.ContactUsCucumberTest" />
+        </classes>
+    </test>
+
+</suite>

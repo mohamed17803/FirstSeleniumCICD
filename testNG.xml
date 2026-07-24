@@ -1,0 +1,131 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="Regression Suite" parallel="tests">
+
+    <listeners>
+        <listener class-name="io.qameta.allure.testng.AllureTestNg" />
+    </listeners>
+
+    <test name="Regression Test in Chrome">
+        <parameter name="browser" value="chrome" />
+        <classes>
+            <class name="testsPackage.RegisterTest">
+                <methods>
+                    <include name="RegisterFeatureTest" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.LoginTest">
+                <methods>
+                    <include name="LoginFeatureTest" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.AddtoCartTest">
+                <methods>
+                    <include name="AddingProductFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.AddtoWishlistTest">
+                <methods>
+                    <include name="AddToWishlistFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.SearchFeatureTest">
+                <methods>
+                    <include name="SearchingFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.ContactUsTest">
+                <methods>
+                    <include name="ContactUsCheck" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Regression Test in Edge">
+        <parameter name="browser" value="edge" />
+        <classes>
+            <class name="testsPackage.AddtoCartTest">
+                <methods>
+                    <include name="AddingProductFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.AddtoWishlistTest">
+                <methods>
+                    <include name="AddToWishlistFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.SearchFeatureTest">
+                <methods>
+                    <include name="SearchingFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.ContactUsTest">
+                <methods>
+                    <include name="ContactUsCheck" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.RegisterTest">
+                <methods>
+                    <include name="RegisterFeatureTest" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.LoginTest">
+                <methods>
+                    <include name="LoginFeatureTest" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+    <test name="Regression Test in Firefox">
+        <parameter name="browser" value="firefox" />
+        <classes>
+            <class name="testsPackage.SearchFeatureTest">
+                <methods>
+                    <include name="SearchingFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.ContactUsTest">
+                <methods>
+                    <include name="ContactUsCheck" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.RegisterTest">
+                <methods>
+                    <include name="RegisterFeatureTest" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.LoginTest">
+                <methods>
+                    <include name="LoginFeatureTest" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.AddtoCartTest">
+                <methods>
+                    <include name="AddingProductFeature" />
+                </methods>
+            </class>
+
+            <class name="testsPackage.AddtoWishlistTest">
+                <methods>
+                    <include name="AddToWishlistFeature" />
+                </methods>
+            </class>
+        </classes>
+    </test>
+
+</suite>
