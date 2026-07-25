@@ -20,23 +20,40 @@ public class DriverFactory {
             throw new IllegalArgumentException("Browser parameter cannot be null");
         }
 
+        System.out.println("========================================");
+        System.out.println("Requested Browser : " + browser);
+        System.out.println("Thread ID         : " + Thread.currentThread().getId());
+        System.out.println("OS                : " + System.getProperty("os.name"));
+        System.out.println("Java Version      : " + System.getProperty("java.version"));
+        System.out.println("========================================");
+
         WebDriver webDriver;
+
         switch (browser.trim().toLowerCase()) {
             case "chrome":
+                System.out.println("Starting ChromeDriver...");
                 webDriver = new ChromeDriver((ChromeOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
+
             case "edge":
+                System.out.println("Starting EdgeDriver...");
                 webDriver = new EdgeDriver((EdgeOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
+
             case "firefox":
+                System.out.println("Starting FirefoxDriver...");
                 webDriver = new FirefoxDriver((FirefoxOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
+
             default:
                 throw new IllegalArgumentException("Unsupported browser: " + browser);
         }
+
+        System.out.println("Driver Started Successfully.");
+        System.out.println("Browser Version : " + ((org.openqa.selenium.remote.RemoteWebDriver) webDriver).getCapabilities().getBrowserVersion());
+
         driver.set(webDriver);
     }
-
     public static WebDriver get() {
         return driver.get();
     }
