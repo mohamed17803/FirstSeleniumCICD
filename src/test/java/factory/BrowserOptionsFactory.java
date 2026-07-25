@@ -41,7 +41,8 @@ public class BrowserOptionsFactory {
     }
     public static EdgeOptions getEdgeOptions() {
         EdgeOptions options = new EdgeOptions();
-        options.addArguments("--headless=new");
+        options.addArguments("--headless");
+        options.addArguments("--disable-gpu");
         options.addArguments("--window-size=1920,1080");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
@@ -49,18 +50,6 @@ public class BrowserOptionsFactory {
         options.addArguments("--disable-popup-blocking");
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--ignore-certificate-errors");
-
-        String userDataDir = System.getProperty("webdriver.userDataDir");
-        if (userDataDir != null && !userDataDir.isEmpty()) {
-            options.addArguments("--user-data-dir=" + userDataDir);
-        } else {
-            options.addArguments("--user-data-dir=C:\\temp\\edge-profile-" + Thread.currentThread().getId());
-        }
-
-        System.out.println("========== Edge Options ==========");
-        options.asMap().forEach((key, value) ->
-                System.out.println(key + " = " + value));
-        System.out.println("==================================");
 
         return options;
     }
