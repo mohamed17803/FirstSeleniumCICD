@@ -39,25 +39,24 @@ public class BrowserOptionsFactory {
         options.addArguments("--ignore-certificate-errors");
         return options;
     }
-
     public static EdgeOptions getEdgeOptions() {
         EdgeOptions options = new EdgeOptions();
-
-      //  options.addArguments("--headless=new");
-      //  options.addArguments("--window-size=1920,1080");
-     //   options.addArguments("--disable-gpu");
-       // options.addArguments("--no-sandbox");
-     //   options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--headless=new");
+        options.addArguments("--window-size=1920,1080");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-extensions");
         options.addArguments("--disable-popup-blocking");
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--ignore-certificate-errors");
-        //options.addArguments("--no-first-run");
-       // options.addArguments("--no-default-browser-check");
-        options.addArguments("--disable-background-networking");
-      //  options.addArguments("--remote-debugging-port=0");
 
-        // ===== Logging =====
+        String userDataDir = System.getProperty("webdriver.userDataDir");
+        if (userDataDir != null && !userDataDir.isEmpty()) {
+            options.addArguments("--user-data-dir=" + userDataDir);
+        } else {
+            options.addArguments("--user-data-dir=C:\\temp\\edge-profile-" + Thread.currentThread().getId());
+        }
+
         System.out.println("========== Edge Options ==========");
         options.asMap().forEach((key, value) ->
                 System.out.println(key + " = " + value));
@@ -65,7 +64,6 @@ public class BrowserOptionsFactory {
 
         return options;
     }
-
     public static FirefoxOptions getFirefoxOptions() {
         FirefoxOptions options = new FirefoxOptions();
         options.addArguments("-headless");

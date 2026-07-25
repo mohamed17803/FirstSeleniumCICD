@@ -7,6 +7,7 @@ import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 public class DriverFactory {
 
@@ -20,9 +21,11 @@ public class DriverFactory {
             throw new IllegalArgumentException("Browser parameter cannot be null");
         }
 
+        long threadId = Thread.currentThread().threadId();
+
         System.out.println("========================================");
         System.out.println("Requested Browser : " + browser);
-        System.out.println("Thread ID         : " + Thread.currentThread().getId());
+        System.out.println("Thread ID         : " + threadId);
         System.out.println("OS                : " + System.getProperty("os.name"));
         System.out.println("Java Version      : " + System.getProperty("java.version"));
         System.out.println("========================================");
@@ -37,7 +40,7 @@ public class DriverFactory {
 
             case "edge":
                 System.out.println("Starting EdgeDriver...");
-                webDriver = new EdgeDriver((EdgeOptions) BrowserOptionsFactory.getOptions(browser));
+                webDriver = startEdgeWithRetry(3, 2000); // retry up to 3 times, wait 2s between
                 break;
 
             case "firefox":
@@ -45,15 +48,38 @@ public class DriverFactory {
                 webDriver = new FirefoxDriver((FirefoxOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
 
+
             default:
                 throw new IllegalArgumentException("Unsupported browser: " + browser);
         }
 
         System.out.println("Driver Started Successfully.");
-        System.out.println("Browser Version : " + ((org.openqa.selenium.remote.RemoteWebDriver) webDriver).getCapabilities().getBrowserVersion());
+        System.out.println("Browser Version : " + ((RemoteWebDriver) webDriver).getCapabilities().getBrowserVersion());
 
         driver.set(webDriver);
     }
+
+    private static WebDriver startEdgeWithRetry(int maxRetries, long waitMillis) {
+        int attempt = 0;
+        while (true) {
+            try {
+                return new EdgeDriver((EdgeOptions) BrowserOptionsFactory.getOptions("edge"));
+            } catch (Exception e) {
+                attempt++;
+                System.err.println("EdgeDriver start failed (attempt " + attempt + "): " + e.getMessage());
+                if (attempt >= maxRetries) {
+                    throw new RuntimeException("EdgeDriver could not be started after " + maxRetries + " attempts", e);
+                }
+                try {
+                    Thread.sleep(waitMillis);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Retry interrupted", ie);
+                }
+            }
+        }
+    }
+
     public static WebDriver get() {
         return driver.get();
     }
