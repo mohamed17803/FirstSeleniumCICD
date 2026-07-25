@@ -36,18 +36,22 @@ public class DriverFactory {
         switch (browser.trim().toLowerCase()) {
             case "chrome":
                 System.out.println("Starting ChromeDriver...");
-                WebDriverManager.chromedriver().setup(); // auto-manage Chrome driver
+                WebDriverManager.chromedriver()
+                        //.proxy("http://proxy:port") // لو محتاج Proxy ضيفه هنا
+                        .setup();
                 webDriver = new ChromeDriver((ChromeOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
 
             case "edge":
                 System.out.println("Starting EdgeDriver...");
-                webDriver = startEdgeWithRetry(3, 2000); // retry logic for Edge
+                webDriver = startEdgeWithRetry(); // retry logic for Edge
                 break;
 
             case "firefox":
                 System.out.println("Starting FirefoxDriver...");
-                WebDriverManager.firefoxdriver().setup(); // auto-manage Firefox driver
+                WebDriverManager.firefoxdriver()
+                        //.proxy("http://proxy:port") // لو محتاج Proxy ضيفه هنا
+                        .setup();
                 webDriver = new FirefoxDriver((FirefoxOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
 
@@ -61,20 +65,22 @@ public class DriverFactory {
         driver.set(webDriver);
     }
 
-    private static WebDriver startEdgeWithRetry(int maxRetries, long waitMillis) {
+    private static WebDriver startEdgeWithRetry() {
         int attempt = 0;
         while (true) {
             try {
-                WebDriverManager.edgedriver().setup(); // auto-manage Edge driver
+                WebDriverManager.edgedriver()
+                        //.proxy("http://proxy:port") // لو محتاج Proxy ضيفه هنا
+                        .setup();
                 return new EdgeDriver((EdgeOptions) BrowserOptionsFactory.getOptions("edge"));
             } catch (Exception e) {
                 attempt++;
                 System.err.println("EdgeDriver start failed (attempt " + attempt + "): " + e.getMessage());
-                if (attempt >= maxRetries) {
-                    throw new RuntimeException("EdgeDriver could not be started after " + maxRetries + " attempts", e);
+                if (attempt >= 3) {
+                    throw new RuntimeException("EdgeDriver could not be started after " + 3 + " attempts", e);
                 }
                 try {
-                    Thread.sleep(waitMillis);
+                    Thread.sleep((long) 2000);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     throw new RuntimeException("Retry interrupted", ie);
