@@ -1,5 +1,6 @@
 package factory;
 
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -35,19 +36,20 @@ public class DriverFactory {
         switch (browser.trim().toLowerCase()) {
             case "chrome":
                 System.out.println("Starting ChromeDriver...");
+                WebDriverManager.chromedriver().setup(); // auto-manage Chrome driver
                 webDriver = new ChromeDriver((ChromeOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
 
             case "edge":
                 System.out.println("Starting EdgeDriver...");
-                webDriver = startEdgeWithRetry(3, 2000); // retry up to 3 times, wait 2s between
+                webDriver = startEdgeWithRetry(3, 2000); // retry logic for Edge
                 break;
 
             case "firefox":
                 System.out.println("Starting FirefoxDriver...");
+                WebDriverManager.firefoxdriver().setup(); // auto-manage Firefox driver
                 webDriver = new FirefoxDriver((FirefoxOptions) BrowserOptionsFactory.getOptions(browser));
                 break;
-
 
             default:
                 throw new IllegalArgumentException("Unsupported browser: " + browser);
@@ -63,6 +65,7 @@ public class DriverFactory {
         int attempt = 0;
         while (true) {
             try {
+                WebDriverManager.edgedriver().setup(); // auto-manage Edge driver
                 return new EdgeDriver((EdgeOptions) BrowserOptionsFactory.getOptions("edge"));
             } catch (Exception e) {
                 attempt++;
