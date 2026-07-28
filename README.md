@@ -7,12 +7,14 @@
 Automated testing framework for the **AwesomeQA E-Commerce Application**
 
 ![Java](https://img.shields.io/badge/Java-21-orange)
-![Selenium](https://img.shields.io/badge/Selenium-4.29.0-green)
+![Selenium](https://img.shields.io/badge/Selenium-4.46.0-green)
 ![TestNG](https://img.shields.io/badge/TestNG-7.10.2-red)
 ![Cucumber](https://img.shields.io/badge/Cucumber-7.20.1-brightgreen)
 ![Maven](https://img.shields.io/badge/Maven-3.x-blue)
 ![Jenkins](https://img.shields.io/badge/Jenkins-CI%2FCD-red)
 ![Allure](https://img.shields.io/badge/Allure-Reporting-purple)
+![Parallel](https://img.shields.io/badge/Cross--Browser-Parallel-blueviolet)
+![Headless](https://img.shields.io/badge/Execution-Headless-lightgrey)
 
 </div>
 
@@ -22,7 +24,7 @@ Automated testing framework for the **AwesomeQA E-Commerce Application**
 
 A comprehensive Selenium-based test automation framework for the **AwesomeQA** e-commerce web application.
 
-🔹 Covers complete user journeys
+🔹 Covers complete user journeys (login, registration, search, cart, wishlist, contact form)
 
 🔹 Uses Page Object Model (POM)
 
@@ -30,7 +32,9 @@ A comprehensive Selenium-based test automation framework for the **AwesomeQA** e
 
 🔹 Includes BDD with Cucumber
 
-🔹 CI/CD enabled via Jenkins
+🔹 Runs the **full regression suite in parallel across Chrome, Edge, and Firefox** — headless, on every browser at once
+
+🔹 CI/CD enabled via Jenkins, triggered every 12 hours
 
 🔹 Rich reporting with Allure
 
@@ -42,17 +46,19 @@ A comprehensive Selenium-based test automation framework for the **AwesomeQA** e
 
 # 🛠 Tech Stack
 
-| Tool               | Version | Purpose                       |
-| ------------------ | ------- | ----------------------------- |
-| Java               | 21      | Primary language              |
-| Selenium WebDriver | 4.29.0  | Browser automation            |
-| TestNG             | 7.10.2  | Test framework & execution    |
-| Cucumber (BDD)     | 7.20.1  | Behavior-driven scenarios     |
-| WebDriverManager   | 5.9.2   | Automatic driver management   |
-| Jackson            | 2.18.3  | JSON test data parsing        |
-| Allure             | 2.13.9  | Test reporting                |
-| Maven              | 3.x     | Build & dependency management |
-| Jenkins            | Latest  | CI/CD pipeline                |
+| Tool               | Version | Purpose                                  |
+| ------------------- | ------- | ----------------------------------------- |
+| Java                | 21      | Primary language                         |
+| Selenium WebDriver  | 4.46.0  | Browser automation                       |
+| TestNG              | 7.10.2  | Test framework, parallel execution       |
+| Cucumber (BDD)      | 7.20.1  | Behavior-driven scenarios                |
+| Jackson             | 2.18.3  | JSON test data parsing                   |
+| Allure              | 2.24.0  | Test reporting                           |
+| AspectJ             | 1.9.20.1| Allure step-level instrumentation        |
+| Maven               | 3.x     | Build & dependency management            |
+| Jenkins             | Latest  | CI/CD pipeline, scheduled every 12h      |
+
+> `webdrivermanager` is still declared in `pom.xml` but is **not used** anywhere in the code — Selenium 4.6+ resolves and caches the correct browser driver automatically via its built-in Selenium Manager, so no manual driver management is needed.
 
 ---
 
@@ -70,7 +76,12 @@ HamoFirstSelenium/
 │   │   └── ContactUsFeature.java
 │   │
 │   └── test/java/
+│       ├── factory/
+│       │   ├── BrowserOptionsFactory.java   # Chrome / Edge / Firefox options
+│       │   └── DriverFactory.java           # ThreadLocal<WebDriver>, init/get/quit, retry
+│       │
 │       ├── testsPackage/
+│       │   ├── BaseTest.java                # shared @BeforeMethod / @AfterMethod
 │       │   ├── LoginTest.java
 │       │   ├── RegisterTest.java
 │       │   ├── AddtoCartTest.java
@@ -104,6 +115,7 @@ HamoFirstSelenium/
 │       └── ContactUs.json
 │
 ├── testNG.xml
+├── testNG-cucumber.xml
 ├── pom.xml
 └── README.md
 ```
@@ -112,95 +124,105 @@ HamoFirstSelenium/
 
 # 🎯 Test Coverage
 
-| Test Class          | Scenario                         | Type               |
-| ------------------- | -------------------------------- | ------------------ |
-| `LoginTest`         | Valid user login                 | TestNG + Allure    |
-| `RegisterTest`      | New user registration            | TestNG + Allure    |
-| `AddtoCartTest`     | Add product to cart + verify     | TestNG + Allure    |
-| `AddtoWishlistTest` | Add 3 items to wishlist + verify | TestNG + Allure    |
-| `SearchFeatureTest` | Search product by keyword        | TestNG + Allure    |
-| `ContactUsTest`     | Submit contact form + verify     | TestNG + Allure    |
-| `LoginCucumberTest` | BDD login scenario               | Cucumber + Gherkin |
+Every one of the 6 features has **two independent implementations** — a TestNG + Page Object test and a separate Cucumber + Gherkin scenario:
+
+| Feature           | TestNG + Allure       | Cucumber + Gherkin       |
+| ------------------ | ----------------------- | -------------------------- |
+| Login              | `LoginTest`             | `LoginCucumberTest`        |
+| Registration       | `RegisterTest`          | `RegisterCucumberTest`     |
+| Add to Cart        | `AddtoCartTest`         | `AddToCartCucumberTest`    |
+| Add to Wishlist    | `AddtoWishlistTest`     | `WishlistCucumberTest`     |
+| Search             | `SearchFeatureTest`     | `SearchCucumberTest`       |
+| Contact Us         | `ContactUsTest`         | `ContactUsCucumberTest`    |
+
+The TestNG suite (`testNG.xml`) is the one that runs in parallel across **all three browsers**, every run. The Cucumber suite (`testNG-cucumber.xml`) currently runs separately, on Chrome only.
 
 ---
 
-# 🏗 Design Patterns
+# 🏗 Design Patterns & Architecture
 
 ## 📘 Page Object Model (POM)
 
-Every page in the application has a dedicated class under:
-
-```text
-src/main/java/org/Pages/
-```
-
-Each class encapsulates:
-
-✅ Element locators (By selectors)
-
-✅ User actions (click, type, navigate)
-
-✅ Assertions on page state
-
-This separates test logic from UI details — if a locator changes, only the page class needs updating, not every test.
-
----
+Every page in the application has a dedicated class under `src/main/java/org/Pages/`, encapsulating locators, user actions, and page-level assertions — test logic stays separate from UI details, so a locator change only touches one file.
 
 ## 📘 Data-Driven Testing
 
-Test data is stored externally in JSON files under:
+Test data lives externally in JSON under `src/test/resources/testDatafiles/`, read at runtime by `JsonUtils` (Jackson) — data changes don't require touching source code.
 
-```text
-src/test/resources/testDatafiles/
-```
+## 📘 Driver Management: Factory Pattern + ThreadLocal
 
-The `JsonUtils` utility reads these files at runtime using Jackson, so test data can be changed without modifying source code.
+Driver setup used to be duplicated inside every test class's own `@BeforeMethod`. It's now centralized in three classes:
 
----
-
-## 📘 Jenkins-Compatible ChromeOptions
-
-All test classes configure ChromeOptions to ensure stable execution in the Jenkins CI environment:
+**`BrowserOptionsFactory`** — builds the right `Options` object per browser:
 
 ```java
-ChromeOptions options = new ChromeOptions();
-
-options.addArguments("--no-sandbox");
-options.addArguments("--disable-dev-shm-usage");
-options.addArguments("--remote-allow-origins=*");
-options.addArguments("--proxy-server=direct://");
-options.addArguments("--proxy-bypass-list=*");
-options.addArguments("--disable-extensions");
-options.addArguments("--ignore-certificate-errors");
-
-driver = new ChromeDriver(options);
-
-driver.manage().timeouts()
-      .pageLoadTimeout(Duration.ofSeconds(60));
+public static ChromeOptions getChromeOptions() { ... }
+public static EdgeOptions getEdgeOptions() { ... }
+public static FirefoxOptions getFirefoxOptions() { ... }
 ```
 
-### Why?
+**`DriverFactory`** — owns a `ThreadLocal<WebDriver>` so each parallel browser thread gets its own isolated driver instance, with a short retry for transient `SessionNotCreatedException` failures under parallel load:
 
-This configuration resolves:
+```java
+private static final ThreadLocal<WebDriver> driver = new ThreadLocal<>();
 
-* `ERR_CONNECTION_TIMED_OUT`
-* `ElementClickInterceptedException`
+public static void init(String browser) { ... }  // retries once on SessionNotCreatedException
+public static WebDriver get() { return driver.get(); }
+public static void quit() { ... }                // quits and clears the ThreadLocal
+```
 
-that occur when Chrome runs inside a Jenkins agent without a standard desktop environment.
+**`BaseTest`** — reads the `browser` parameter from `testNG.xml` and hands it to `DriverFactory`:
 
----
+```java
+@Parameters("browser")
+@BeforeMethod
+public void setUp(@Optional("chrome") String browser) {
+    DriverFactory.init(browser);
+    driver = DriverFactory.get();
+}
+
+@AfterMethod
+public void tearDown() {
+    DriverFactory.quit();
+}
+```
+
+All 6 test classes now just `extends BaseTest` — no duplicated setup/teardown anywhere. The `@Optional("chrome")` default also means any single test class can still be run on its own from the IDE (outside `testNG.xml`) without needing a browser parameter.
+
+## 📘 Cross-Browser & Parallel Execution
+
+`testNG.xml` runs Chrome, Edge, and Firefox **at the same time**, each executing the **complete** 6-class suite — tests are never split between browsers:
+
+```xml
+<suite name="Regression Suite" parallel="tests" thread-count="3">
+    <test name="Regression Test in Chrome">
+        <parameter name="browser" value="chrome" />
+        ...
+    </test>
+    <test name="Regression Test in Edge">
+        <parameter name="browser" value="edge" />
+        ...
+    </test>
+    <test name="Regression Test in Firefox">
+        <parameter name="browser" value="firefox" />
+        ...
+    </test>
+</suite>
+```
+
+Each `<test>` block runs the classes in a **different order** per browser (a staggered rotation), so no class occupies the same execution slot across two browsers at once. This reduces — though doesn't fully eliminate — the odds of `RegisterTest` racing itself across browsers if two browsers happen to hit registration at the exact same instant.
+
+## 📘 Headless Execution
+
+Chrome and Edge run with `--headless=new` and a fixed `--window-size=1920,1080`; Firefox runs with `-headless`. Each Chrome/Edge session also gets a unique `--user-data-dir` (via `Files.createTempDirectory`) to prevent profile-lock conflicts between the three simultaneous sessions.
 
 ## 📘 JavaScript Click for Dynamic Elements
 
-Elements covered by dynamic overlays (sliders, banners) are clicked via `JavascriptExecutor` to bypass interception issues:
+Elements covered by dynamic overlays (sliders, banners) are clicked via `JavascriptExecutor` to bypass click-interception issues:
 
 ```java
 JavascriptExecutor js = (JavascriptExecutor) driver;
-
-js.executeScript(
-    "arguments[0].click();",
-    element
-);
+js.executeScript("arguments[0].click();", element);
 ```
 
 ---
@@ -210,122 +232,28 @@ js.executeScript(
 ## 🔄 How It Works
 
 ```mermaid
-flowchart LR
-
-A[GitHub Repository]
---> B[Jenkins Pipeline]
-
-B --> C[Maven Build]
-
-C --> D[TestNG Execution]
-
-D --> E[Allure Results]
-
-E --> F[Allure Report]
+flowchart TD
+    A[GitHub Repository] --> B[Jenkins Pipeline]
+    B --> C[Maven Build]
+    C --> D[testNG.xml — parallel=tests]
+    D --> E[Chrome: 6 classes]
+    D --> F[Edge: 6 classes]
+    D --> G[Firefox: 6 classes]
+    E --> H[Allure Results]
+    F --> H
+    G --> H
+    H --> I[Allure Report]
 ```
-
----
 
 ## 📋 Jenkins Pipeline Configuration
 
 | Setting       | Value                                                |
-| ------------- | ---------------------------------------------------- |
-| Source        | GitHub — mohamed17803/HamoFirstSelenium              |
-| Build Command | `mvn clean test -Dsurefire.suiteXmlFiles=testNG.xml` |
-| Trigger       | Every 12 hours (`H */12 * * *`)                      |
-| Report        | Allure plugin — reads `target/allure-results`        |
-
----
-
-## 🔍 Where Jenkins Integration Lives in the Code
-
-### 1️⃣ `testNG.xml` — Suite Entry Point
-
-Jenkins passes this file to Maven Surefire to define which tests to run and in what order.
-
-```xml
-<suite name="Regression Suite">
-  <listeners>
-    <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
-  </listeners>
-
-  <test name="Regression Test in Chrome">
-    <classes>
-      <class name="testsPackage.LoginTest"/>
-      <class name="testsPackage.RegisterTest"/>
-    </classes>
-  </test>
-</suite>
-```
-
----
-
-### 2️⃣ `pom.xml` — Maven Surefire Plugin
-
-Surefire runs the TestNG suite and writes results to:
-
-```text
-target/surefire-reports/
-target/allure-results/
-```
-
----
-
-### 3️⃣ ChromeOptions in every `@BeforeMethod`
-
-Without these flags, Chrome fails silently in the Jenkins agent environment.
-
-These options are the CI compatibility layer.
-
----
-
-### 4️⃣ JavascriptExecutor Clicks
-
-Used in:
-
-* `WishlistFeature.java`
-* `AddToCart.java`
-
-Dynamic page elements (sliders, banners) block normal `.click()` in headless/CI environments.
-
-JS click bypasses the overlay.
-
----
-
-### 5️⃣ Allure Listener
-
-```xml
-<listener class-name="io.qameta.allure.testng.AllureTestNg"/>
-```
-
-Captures:
-
-* Step-level results
-* Screenshots
-* Severity metadata
-* Execution timeline
-
-Published automatically by Jenkins after each build.
-
----
-
-# ✅ Latest Jenkins Run Result
-
-```text
-Tests run: 6
-
-Failures: 0
-
-Errors: 0
-
-Skipped: 0
-
-BUILD SUCCESS ✅
-
-Total time: 1 min 5 sec
-```
-
----
+| -------------- | ----------------------------------------------------- |
+| Source         | GitHub — `mohamed17803/HamoFirstSelenium`            |
+| Build Command  | `mvn clean test -Dsurefire.suiteXmlFiles=testNG.xml` |
+| Trigger        | Every 12 hours (`H */12 * * *`)                      |
+| Service Account| Regular Windows user (not Local System — see above)  |
+| Report         | Allure plugin — reads `target/allure-results`        |
 
 # 🚀 Setup & Execution
 
@@ -333,9 +261,7 @@ Total time: 1 min 5 sec
 
 * Java 21+
 * Maven 3.6+
-* Google Chrome (latest)
-
----
+* Chrome, Edge, and Firefox installed locally (for local parallel runs)
 
 ## Run Locally
 
@@ -346,12 +272,14 @@ git clone https://github.com/mohamed17803/HamoFirstSelenium.git
 # Enter project
 cd HamoFirstSelenium
 
-# Run full regression suite
+# Run the full parallel cross-browser regression suite
 mvn clean test -Dsurefire.suiteXmlFiles=testNG.xml
 
-# Generate and open Allure report
+# Generate and open the Allure report
 allure serve target/allure-results
 ```
+
+Any individual test class can also be run on its own from the IDE — it defaults to Chrome via `@Optional("chrome")` in `BaseTest`.
 
 ---
 
@@ -361,18 +289,10 @@ Tests use Allure annotations for rich reporting:
 
 ```java
 @Epic("User Authentication")
-
 @Story("Login with valid credentials")
-
 @Severity(SeverityLevel.BLOCKER)
-
-@Description(
-"Validate successful login redirects to account dashboard"
-)
-
-@Step(
-"Submit login form with valid email and password"
-)
+@Description("Validate successful login redirects to account dashboard")
+@Step("Submit login form with valid email and password")
 ```
 
 ### Reports Include
@@ -383,7 +303,21 @@ Tests use Allure annotations for rich reporting:
 
 ✅ Pass/Fail History
 
-✅ Execution Timeline
+✅ Execution Timeline per browser
+
+### Sample Report
+
+**Overview — Build #614 (100% pass rate)**
+
+![Allure Overview](docs/allure-overview.png)
+
+18/18 test cases passed across Chrome, Edge, and Firefox in this run. The trend chart on the right tracks the last 20 Jenkins builds — the green bands are fully passing runs, the yellow spikes are runs affected by transient network/rate-limiting issues from the demo application under test rather than defects in the suite itself.
+
+**Suite breakdown — individual test case detail**
+
+![Allure Suites](docs/allure-suites.png)
+
+Each test case is broken down step-by-step (e.g. navigate → login → add to wishlist → verify), with execution time per step and full parameter visibility for data-driven runs.
 
 ---
 
