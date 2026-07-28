@@ -319,6 +319,8 @@ Tests use Allure annotations for rich reporting:
 
 Each test case is broken down step-by-step (e.g. navigate → login → add to wishlist → verify), with execution time per step and full parameter visibility for data-driven runs.
 
+📄 [Full console output — Build #614](docs/logs/build-614.txt)
+
 ---
 
 # 👨‍💻 Author
